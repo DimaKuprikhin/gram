@@ -46,3 +46,6 @@ def parse_github_url(url: str)-> typing.Tuple[str, str]:
     if len(parts) != 3:
         raise GithubUrlParsingException()
     return parts[1], parts[2]
+
+def make_github_url(owner: str, name: str)-> str:
+    return f'https://github.com/{owner}/{name}'

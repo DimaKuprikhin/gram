@@ -1,10 +1,12 @@
 #!/usr/bin/python3
 import argparse
 import pathlib
+import tabulate
 
 from installer import Installer, ExistingScriptException, IncorrectReinstallUsage
 from repository_manager import RepositoryManager
 from trigger_manager import TriggerManager, UniqueTriggerException
+import utils
 
 
 DIR = pathlib.PosixPath.home() / '.gram'
@@ -58,6 +60,19 @@ def add_always_trigger(args):
     except UniqueTriggerException:
         print(EXISTING_TRIGGER_MESSAGE.format(args.app_name, args.trigger_type))
 
+def list(args):
+    repos = RepositoryManager(DIR).list()
+    trigger_manager = TriggerManager(DIR)
+    rows = []
+    for repo in repos:
+        triggers = ' '.join([t.type for t in trigger_manager.get(repo.app_name)])
+        if not triggers:
+            triggers = '-'
+        url = utils.make_github_url(repo.repo_owner, repo.repo_name)
+        row = [repo.app_name, triggers, url]
+        rows.append(row)
+    print(tabulate.tabulate(rows, headers=['Application', 'Triggers', 'URL']))
+
 parser = argparse.ArgumentParser(prog='gram')
 
 sp = parser.add_subparsers(dest='command', required=True)
@@ -79,6 +94,9 @@ trigger_sp = add_trigger_parser.add_subparsers(
 
 always_trigger_parser = trigger_sp.add_parser('always')
 always_trigger_parser.set_defaults(func=add_always_trigger)
+
+list_parser = sp.add_parser('list')
+list_parser.set_defaults(func=list)
 
 args = parser.parse_args()
 args.func(args)
