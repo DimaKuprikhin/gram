@@ -4,21 +4,27 @@ import pathlib
 
 from installer import Installer, ExistingScriptException, IncorrectReinstallUsage
 from repository_manager import RepositoryManager
-from trigger_manager import TriggerManager
+from trigger_manager import TriggerManager, UniqueTriggerException
 
 
 DIR = pathlib.PosixPath.home() / '.gram'
 
 
 EXISTING_REPO_MESSAGE = (
-'The application {} is already added.'
+'The application "{}" is already added.'
 )
 EXISTING_SCRIPT_MESSAGE = (
-'''The application {} is already has installation script.
+'''The application "{}" is already has installation script.
 Use option --reinstall to create new installation script.'''
 )
 INCORRECT_REINSTALL_MESSAGE = (
-'Incorrect usage of --reinstall option: the application {} hasn\'t been installed yet.'
+'Incorrect usage of --reinstall option: the application "{}" hasn\'t been installed yet.'
+)
+APP_NOT_FOUND = (
+'The application "{}" is not found.'
+)
+EXISTING_TRIGGER_MESSAGE = (
+'The application "{}" is already has trigger with type "{}".'
 )
 
 
@@ -41,11 +47,16 @@ def install(args):
         print(INCORRECT_REINSTALL_MESSAGE.format(args.app_name))
 
 def add_always_trigger(args):
-    manager = TriggerManager(DIR)
+    repos_manager = RepositoryManager(DIR)
+    if repos_manager.get(args.app_name) is None:
+        print(APP_NOT_FOUND.format(args.app_name))
+        return
+
+    trigger_manager = TriggerManager(DIR)
     try:
-        manager.add(args.app_name, args.trigger_type, None)
-    except Exception:
-        raise Exception()
+        trigger_manager.add(args.app_name, args.trigger_type, None)
+    except UniqueTriggerException:
+        print(EXISTING_TRIGGER_MESSAGE.format(args.app_name, args.trigger_type))
 
 parser = argparse.ArgumentParser(prog='gram')
 

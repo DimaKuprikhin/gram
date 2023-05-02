@@ -1,9 +1,14 @@
 import pathlib
 import typing
+import sqlite3
 
 from databases.triggers_db import TriggersDB
 from models.trigger import Trigger
-import utils
+
+
+class UniqueTriggerException(Exception):
+    def __init__(self):
+        pass
 
 
 class TriggerManager:
@@ -23,7 +28,10 @@ class TriggerManager:
 
     def add(self, app_name: str, trigger_type: str, value: typing.Optional[str]):
         trigger = Trigger(app_name, trigger_type, value, '')
-        self.db.add(trigger)
+        try:
+            self.db.add(trigger)
+        except sqlite3.IntegrityError:
+            raise UniqueTriggerException()
 
     def get(self, app_name: str)-> typing.List[Trigger]:
         return self.db.get(app_name)
