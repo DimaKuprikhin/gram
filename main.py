@@ -1,77 +1,43 @@
 #!/usr/bin/python3
 import argparse
-import pathlib
-import tabulate
 
-from installer import Installer, ExistingScriptException, IncorrectReinstallUsage
-from repository_manager import RepositoryManager
-from trigger_manager import TriggerManager, UniqueTriggerException
-import utils
-
-
-DIR = pathlib.PosixPath.home() / '.gram'
+from context import Context
+import handlers.add_trigger
+import handlers.add
+import handlers.install
+import handlers.list
+import handlers.update
 
 
-EXISTING_REPO_MESSAGE = (
-'The application "{}" is already added.'
-)
-EXISTING_SCRIPT_MESSAGE = (
-'''The application "{}" is already has installation script.
-Use option --reinstall to create new installation script.'''
-)
-INCORRECT_REINSTALL_MESSAGE = (
-'Incorrect usage of --reinstall option: the application "{}" hasn\'t been installed yet.'
-)
-APP_NOT_FOUND = (
-'The application "{}" is not found.'
-)
-EXISTING_TRIGGER_MESSAGE = (
-'The application "{}" is already has trigger with type "{}".'
-)
+context = Context('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')
 
 
 def add(args):
-    manager = RepositoryManager(DIR)
-    if manager.get(args.app_name) is not None:
-        print(EXISTING_REPO_MESSAGE.format(args.app_name))
-        return
-    manager.add(args.app_name, args.url)
+    handlers.add.handle(args.app_name, args.url, args.branch, context)
+
 
 def install(args):
-    manager = RepositoryManager(DIR)
-    repo = manager.get(args.app_name)
-    installer = Installer(DIR)
-    try:
-        installer.install(repo.app_name, args.reinstall, repo.path)
-    except ExistingScriptException:
-        print(EXISTING_SCRIPT_MESSAGE.format(args.app_name))
-    except IncorrectReinstallUsage:
-        print(INCORRECT_REINSTALL_MESSAGE.format(args.app_name))
+    handlers.install.handle(args.app_name, args.reinstall, context)
 
-def add_always_trigger(args):
-    repos_manager = RepositoryManager(DIR)
-    if repos_manager.get(args.app_name) is None:
-        print(APP_NOT_FOUND.format(args.app_name))
-        return
 
-    trigger_manager = TriggerManager(DIR)
-    try:
-        trigger_manager.add(args.app_name, args.trigger_type, None)
-    except UniqueTriggerException:
-        print(EXISTING_TRIGGER_MESSAGE.format(args.app_name, args.trigger_type))
+def add_trigger(args):
+    update_period = args.update_period if hasattr(
+        args, 'update_period') else None
+    handlers.add_trigger.handle(
+        args.app_name, args.trigger_type, update_period, context,
+    )
+
 
 def list(args):
-    repos = RepositoryManager(DIR).list()
-    trigger_manager = TriggerManager(DIR)
-    rows = []
-    for repo in repos:
-        triggers = ' '.join([t.type for t in trigger_manager.get(repo.app_name)])
-        if not triggers:
-            triggers = '-'
-        url = utils.make_github_url(repo.repo_owner, repo.repo_name)
-        row = [repo.app_name, triggers, url]
-        rows.append(row)
-    print(tabulate.tabulate(rows, headers=['Application', 'Triggers', 'URL']))
+    handlers.list.handle(context)
+
+
+def update(args):
+    handlers.update.handle(
+        args.app_name if hasattr(args, 'app_name') else None,
+        context
+    )
+
 
 parser = argparse.ArgumentParser(prog='gram')
 
@@ -80,6 +46,7 @@ sp = parser.add_subparsers(dest='command', required=True)
 add_parser = sp.add_parser('add')
 add_parser.add_argument('app_name', metavar='app-name', type=str)
 add_parser.add_argument('url', type=str)
+add_parser.add_argument('branch', type=str, default=None, nargs='?')
 add_parser.set_defaults(func=add)
 
 install_parser = sp.add_parser('install')
@@ -93,10 +60,21 @@ trigger_sp = add_trigger_parser.add_subparsers(
     dest='trigger_type', metavar='trigger-type', required=True)
 
 always_trigger_parser = trigger_sp.add_parser('always')
-always_trigger_parser.set_defaults(func=add_always_trigger)
+always_trigger_parser.set_defaults(func=add_trigger)
+
+commit_trigger_parser = trigger_sp.add_parser('commit')
+commit_trigger_parser.set_defaults(func=add_trigger)
+
+timer_trigger_parser = trigger_sp.add_parser('timer')
+timer_trigger_parser.add_argument('update_period', metavar='update-period', type=str)
+timer_trigger_parser.set_defaults(func=add_trigger)
 
 list_parser = sp.add_parser('list')
 list_parser.set_defaults(func=list)
+
+update_parser = sp.add_parser('update')
+update_parser.add_argument('app_name', metavar='app-name', type=str, nargs='?')
+update_parser.set_defaults(func=update)
 
 args = parser.parse_args()
 args.func(args)
