@@ -113,6 +113,6 @@ class ApplicationsDB:
 
     def remove(self, app_name: str) -> bool:
         cur = self.conn.cursor()
-        cur.execute(DELETE_QUERY, app_name)
+        cur.execute(DELETE_QUERY, [app_name])
         self.conn.commit()
         return cur.rowcount >= 1

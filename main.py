@@ -8,6 +8,7 @@ import handlers.install
 import handlers.list
 import handlers.update
 import handlers.remove_trigger
+import handlers.remove
 
 
 context = Context('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')
@@ -32,6 +33,10 @@ def add_trigger(args):
 def remove_trigger(args):
     trigger_type = args.trigger_type if hasattr(args, 'trigger_type') else None
     handlers.remove_trigger.handle(args.app_name, trigger_type, context)
+
+
+def remove(args):
+    handlers.remove.handle(args.app_name, context)
 
 
 def list(args):
@@ -79,6 +84,10 @@ remove_trigger_parser = sp.add_parser('remove-trigger')
 remove_trigger_parser.add_argument('app_name', metavar='app-name', type=str)
 remove_trigger_parser.add_argument('trigger_type', metavar='trigger-type', type=str, nargs='?')
 remove_trigger_parser.set_defaults(func=remove_trigger)
+
+remove_parser = sp.add_parser('remove')
+remove_parser.add_argument('app_name', metavar='app-name', type=str)
+remove_parser.set_defaults(func=remove)
 
 list_parser = sp.add_parser('list')
 list_parser.set_defaults(func=list)

@@ -41,9 +41,13 @@ SELECT_ALL_QUERY = (
     '''SELECT app_name, version, installed_at, commit_, path, is_downloaded
     FROM application_versions;'''
 )
-DELETE_QUERY = (
+DELETE_BY_VERSION_QUERY = (
     '''DELETE FROM application_versions
     WHERE (app_name, version) = (?, ?);'''
+)
+DELETE_QUERY = (
+    '''DELETE FROM application_versions
+    WHERE app_name = ?;'''
 )
 UPDATE_QUERY = (
     '''UPDATE application_versions
@@ -127,8 +131,14 @@ class ApplicationVersionsDB:
             repositories.append(_deserialize_application_version(row))
         return repositories
 
-    def remove(self, app_name: str, version: int) -> bool:
+    def remove_by_version(self, app_name: str, version: int) -> bool:
         cur = self.conn.cursor()
-        cur.execute(DELETE_QUERY, [app_name, version])
+        cur.execute(DELETE_BY_VERSION_QUERY, [app_name, version])
+        self.conn.commit()
+        return cur.rowcount >= 1
+
+    def remove(self, app_name: str) -> bool:
+        cur = self.conn.cursor()
+        cur.execute(DELETE_QUERY, [app_name])
         self.conn.commit()
         return cur.rowcount >= 1
