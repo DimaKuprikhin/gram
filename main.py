@@ -2,6 +2,7 @@
 import argparse
 
 from context import Context
+import handlers.help
 import handlers.add_trigger
 import handlers.add
 import handlers.install
@@ -13,7 +14,11 @@ import handlers.revert
 import handlers.update_by_timer
 
 
-context = Context('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')
+context = Context()
+
+
+def help(args):
+    handlers.help.handle(args.command)
 
 
 def add(args):
@@ -63,6 +68,10 @@ def revert(args):
 parser = argparse.ArgumentParser(prog='gram')
 
 sp = parser.add_subparsers(dest='command', required=True)
+
+help_parser = sp.add_parser('help')
+help_parser.add_argument('command', type=str, nargs='?', default=None)
+help_parser.set_defaults(func=help)
 
 add_parser = sp.add_parser('add')
 add_parser.add_argument('app_name', metavar='app-name', type=str)

@@ -54,6 +54,14 @@ def install(app: Application, version: int, context: Context):
     app.current_version = version
     context.db.applications.update(app)
 
+    for v in range(1, version - context.config.versions_cached + 1):
+        cached_version = context.db.application_versions.get(app_name, v)
+        if cached_version is None or not cached_version.is_downloaded:
+            continue
+        utils.rmdir(cached_version.path)
+        cached_version.is_downloaded = False
+        context.db.application_versions.update(cached_version)
+
 
 def handle(app_name: str, reinstall: bool, context: Context):
     app = context.db.applications.get(app_name)

@@ -1,14 +1,15 @@
 import crontab
+import getpass
 
 from context import Context
 
 
 def handle(enable: bool, context: Context):
-    cron = crontab.CronTab(user='dima')
-    job = next(cron.find_command('/usr/local/bin/gram update > /home/dima/gram_log.txt'), None)
+    user = getpass.getuser()
+    cron = crontab.CronTab(user=user)
+    job = next(cron.find_command('/usr/local/bin/gram update'), None)
     if job is None:
-        job = cron.new(user='dima', command='/usr/local/bin/gram update > /home/dima/gram_log.txt')
+        job = cron.new(user=user, command='/usr/local/bin/gram update')
         job.setall('* * * * *')
-    job.user = 'dima'
     job.enable(enable)
-    cron.write(user='dima')
+    cron.write(user=user)

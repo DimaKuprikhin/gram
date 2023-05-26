@@ -5,6 +5,7 @@ from context import Context
 from models.application_version import ApplicationVersion
 from models.application import Application
 from models.trigger import Trigger
+import utils
 
 
 NO_APPS_MESSAGE = (
@@ -40,13 +41,15 @@ def check_triggers(
     for trigger in triggers:
         if trigger.type == 'always':
             return True
+        commit = context.github.get_current_commit(
+                app.repo_owner,
+                app.repo_name,
+                app.branch
+        )
+        if app_version.commit == commit:
+            return False
         if trigger.type == 'commit':
-            commit = context.github.get_current_commit(
-                    app.repo_owner,
-                    app.repo_name,
-                    app.branch
-            )
-            return app_version.commit != commit
+            return True
         if trigger.type == 'timer':
             now = datetime.datetime.utcnow()
             return (app_version.installed_at + trigger.update_period) <= now
@@ -100,6 +103,15 @@ def handle(app_name: typing.Optional[str], context: Context):
             context.db.application_versions.add(app_version)
             app.current_version = version
             context.db.applications.update(app)
+
+            for v in range(1, version - context.config.versions_cached + 1):
+                cached_version = context.db.application_versions.get(app.app_name, v)
+                if cached_version is None or not cached_version.is_downloaded:
+                    continue
+                utils.rmdir(cached_version.path)
+                cached_version.is_downloaded = False
+                context.db.application_versions.update(cached_version)
+
             print(SUCCESSFULL_UPDATE_MESSAGE.format(app.app_name))
         else:
             print(NO_UPDATES_MESSAGE.format(app.app_name))
