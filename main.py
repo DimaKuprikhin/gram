@@ -10,6 +10,7 @@ import handlers.update
 import handlers.remove_trigger
 import handlers.remove
 import handlers.revert
+import handlers.update_by_timer
 
 
 context = Context('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')
@@ -49,6 +50,10 @@ def update(args):
         args.app_name if hasattr(args, 'app_name') else None,
         context
     )
+
+
+def update_by_timer(args):
+    handlers.update_by_timer.handle(args.enabled != 0, context)
 
 
 def revert(args):
@@ -105,6 +110,10 @@ revert_parser = sp.add_parser('revert')
 revert_parser.add_argument('app_name', metavar='app-name', type=str)
 revert_parser.add_argument('version', type=int)
 revert_parser.set_defaults(func=revert)
+
+update_by_timer_parser = sp.add_parser('update-by-timer')
+update_by_timer_parser.add_argument('enabled', type=int)
+update_by_timer_parser.set_defaults(func=update_by_timer)
 
 args = parser.parse_args()
 args.func(args)
