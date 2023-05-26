@@ -37,6 +37,10 @@ SELECT_ALL_QUERY = (
 )
 DELETE_QUERY = (
     '''DELETE FROM triggers
+    WHERE app_name = ?;'''
+)
+DELETE_BY_TYPE_QUERY = (
+    '''DELETE FROM triggers
     WHERE app_name = ? and type = ?;'''
 )
 
@@ -112,8 +116,14 @@ class TriggersDB:
         return repositories
 
 
-    def remove(self, app_name: str, type: str) -> bool:
+    def remove_by_type(self, app_name: str, type: str) -> bool:
         cur = self.conn.cursor()
-        cur.execute(DELETE_QUERY, [app_name, type])
+        cur.execute(DELETE_BY_TYPE_QUERY, [app_name, type])
+        self.conn.commit()
+        return cur.rowcount >= 1
+
+    def remove(self, app_name: str) -> bool:
+        cur = self.conn.cursor()
+        cur.execute(DELETE_QUERY, [app_name])
         self.conn.commit()
         return cur.rowcount >= 1

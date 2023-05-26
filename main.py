@@ -7,6 +7,7 @@ import handlers.add
 import handlers.install
 import handlers.list
 import handlers.update
+import handlers.remove_trigger
 
 
 context = Context('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')
@@ -26,6 +27,11 @@ def add_trigger(args):
     handlers.add_trigger.handle(
         args.app_name, args.trigger_type, update_period, context,
     )
+
+
+def remove_trigger(args):
+    trigger_type = args.trigger_type if hasattr(args, 'trigger_type') else None
+    handlers.remove_trigger.handle(args.app_name, trigger_type, context)
 
 
 def list(args):
@@ -68,6 +74,11 @@ commit_trigger_parser.set_defaults(func=add_trigger)
 timer_trigger_parser = trigger_sp.add_parser('timer')
 timer_trigger_parser.add_argument('update_period', metavar='update-period', type=str)
 timer_trigger_parser.set_defaults(func=add_trigger)
+
+remove_trigger_parser = sp.add_parser('remove-trigger')
+remove_trigger_parser.add_argument('app_name', metavar='app-name', type=str)
+remove_trigger_parser.add_argument('trigger_type', metavar='trigger-type', type=str, nargs='?')
+remove_trigger_parser.set_defaults(func=remove_trigger)
 
 list_parser = sp.add_parser('list')
 list_parser.set_defaults(func=list)
