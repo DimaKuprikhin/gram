@@ -51,7 +51,7 @@ DELETE_QUERY = (
 )
 UPDATE_QUERY = (
     '''UPDATE application_versions
-    SET (installed_at, commit_, path, is_downloaded) = (?, ?, ?, ?, ?)
+    SET (installed_at, commit_, path, is_downloaded) = (?, ?, ?, ?)
     WHERE (app_name, version) = (?, ?);'''
 )
 

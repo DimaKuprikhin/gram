@@ -9,6 +9,7 @@ import handlers.list
 import handlers.update
 import handlers.remove_trigger
 import handlers.remove
+import handlers.revert
 
 
 context = Context('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')
@@ -48,6 +49,10 @@ def update(args):
         args.app_name if hasattr(args, 'app_name') else None,
         context
     )
+
+
+def revert(args):
+    handlers.revert.handle(args.app_name, args.version, context)
 
 
 parser = argparse.ArgumentParser(prog='gram')
@@ -95,6 +100,11 @@ list_parser.set_defaults(func=list)
 update_parser = sp.add_parser('update')
 update_parser.add_argument('app_name', metavar='app-name', type=str, nargs='?')
 update_parser.set_defaults(func=update)
+
+revert_parser = sp.add_parser('revert')
+revert_parser.add_argument('app_name', metavar='app-name', type=str)
+revert_parser.add_argument('version', type=int)
+revert_parser.set_defaults(func=revert)
 
 args = parser.parse_args()
 args.func(args)

@@ -88,4 +88,5 @@ class ScriptsDB:
     def remove(self, app_name: str) -> bool:
         cur = self.conn.cursor()
         res = cur.execute(DELETE_QUERY, [app_name])
+        self.conn.commit()
         return res.rowcount >= 1
