@@ -4,6 +4,8 @@ from context import Context
 from models.application_version import ApplicationVersion
 from models.application import Application
 from models.script import Script
+from shell import AbortException
+import utils
 
 
 APP_NOT_FOUND_MESSAGE = (
@@ -32,7 +34,11 @@ def install(app: Application, version: int, context: Context):
     # TODO: don't download if no new commits.
     context.github.download(app.repo_owner, app.repo_name, commit, path)
 
-    history = context.installer.install(app_name, path)
+    try:
+        history = context.installer.install(app_name, path)
+    except AbortException as ex:
+        utils.rmdir(path)
+        return
     installed_at = datetime.datetime.utcnow()
 
     script = Script(app_name, context.scirpts_dir / app_name)
