@@ -18,6 +18,7 @@ def handle(app_name: str, context: Context):
     context.db.triggers.remove(app_name)
     context.db.application_versions.remove(app_name)
     context.db.applications.remove(app_name)
-    script.path.unlink()
+    if script is not None:
+        script.path.unlink()
     repos_dir = context.repos_dir / app_name
     utils.rmdir(repos_dir)

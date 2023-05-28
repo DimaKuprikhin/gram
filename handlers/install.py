@@ -18,10 +18,6 @@ Use option --reinstall to create new installation script.'''
 INCORRECT_REINSTALL_MESSAGE = (
 'Incorrect usage of --reinstall option: the application "{}" hasn\'t been installed yet.'
 )
-MISSING_SCRIPT_MESSAGE = (
-'''WARNING: The application "{}" hasn't been installed yet.
-    Use command gram install to install it.'''
-)
 
 
 def install(app: Application, version: int, context: Context):

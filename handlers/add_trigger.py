@@ -13,7 +13,6 @@ EXISTING_TRIGGER_MESSAGE = (
 )
 
 
-# 1d6h
 def parse_update_period(s: str) -> datetime.timedelta:
     separators = [
         {

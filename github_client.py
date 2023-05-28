@@ -38,7 +38,7 @@ class GithubClient:
             headers={
                     'Accept': 'application/vnd.github+json',
                     'X-GitHub-Api-Version': '2022-11-28',
-                    'Authorization': f'Bearer {self.token}',
+                    'Authorization': f'',
             },
             allow_redirects=True,
         )

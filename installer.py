@@ -9,7 +9,8 @@ import utils
 
 INTRO = (
 '''Execute necessary commands to install the application.
-When everything is done, enter exit.
+When everything is done, enter commit.
+Enter abort to cancel installation process.
 '''
 )
 
